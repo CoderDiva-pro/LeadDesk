@@ -1,101 +1,355 @@
 # LeadDesk Mini
 
-A small lead-capture product: a public landing page with a lead form, and an
-admin dashboard to review, search, and triage those leads. Built with the
-MERN stack (MongoDB, Express, React/Vite, Node).
-
-**Live landing page:** _add your deployed URL here_
-**Admin URL:** _add your deployed URL here_ (`/admin`)
-**Test credentials:** _add the admin email you seeded, never the password itself, if this README is public — share the password separately_
+A full-stack lead capture application built with the **MERN Stack (MongoDB, Express.js, React, Node.js)**. It includes a public landing page where visitors can submit leads and a secure admin dashboard where authenticated admins can review, search, and manage those leads.
 
 ---
 
-## Data model
+## Live Demo
 
-Two Mongoose collections:
+🌐 **Landing Page:** [https://lead-desk-rose.vercel.app/](https://lead-desk-rose.vercel.app/)
 
-**`Lead`**
-| field | type | notes |
-|---|---|---|
-| name | String | required, 2–100 chars |
-| email | String | required, validated format, lowercased |
-| budgetRange | String | required, one of a fixed enum (`under-1k`, `1k-5k`, `5k-15k`, `15k-50k`, `50k-plus`) |
-| message | String | required, 10–2000 chars |
-| status | String | enum `New` / `Contacted` / `Closed`, defaults to `New` |
-| createdAt / updatedAt | Date | automatic timestamps |
+🔐 **Admin Login:** [https://lead-desk-rose.vercel.app/admin](https://lead-desk-rose.vercel.app/admin)
 
-A text index on `name`, `email`, and `message` backs the admin search box.
+📂 **GitHub Repository:** [https://github.com/CoderDiva-pro/LeadDesk](https://github.com/CoderDiva-pro/LeadDesk)
 
-**`Admin`**
-| field | type | notes |
-|---|---|---|
-| email | String | unique, lowercased |
-| passwordHash | String | bcrypt hash — the plaintext password is never stored |
-    
-I kept `Lead` and `Admin` as separate collections rather than one
-`users`-style table, since leads are unauthenticated, public-facing records
-and admins are internal accounts with credentials — mixing them would mean
-adding auth fields to every lead for no reason.
+**Test Credentials**
 
-## Auth approach
+Email: admin123@gmail.com
 
-Admin login is real, database-backed authentication, not a hardcoded
-string check:
+Password: Shared separately with the reviewer.
+
+---
+
+# Features
+
+### Public Side
+
+- Responsive landing page
+- Lead submission form
+- Client-side validation
+- Server-side validation
+- Success message after submission
+- Stores leads in MongoDB
+
+### Admin Side
+
+- Secure admin login
+- JWT-based authentication
+- Protected admin routes
+- View all submitted leads
+- Search leads by name, email, or message
+- Update lead status:
+  - New
+  - Contacted
+  - Closed
+- Logout functionality
+
+---
+
+# Tech Stack
+
+## Frontend
+
+- React
+- Vite
+- React Router
+- Axios
+- CSS
+
+## Backend
+
+- Node.js
+- Express.js
+
+## Database
+
+- MongoDB Atlas
+- Mongoose
+
+## Authentication
+
+- JSON Web Token (JWT)
+- bcrypt
+
+## Deployment
+
+- Vercel (Frontend)
+- Render (Backend)
+- MongoDB Atlas (Database)
+
+---
+
+# Project Structure
+
+```
+LeadDesk-Mini
+│
+├── frontend
+│   ├── src
+│   ├── public
+│   └── ...
+│
+├── backend
+│   ├── models
+│   ├── routes
+│   ├── middleware
+│   ├── controllers
+│   └── ...
+│
+└── README.md
+```
+
+---
+
+# Screenshots
+
+## Landing Page
+
+<img width="675" height="861" alt="image" src="https://github.com/user-attachments/assets/04f6a56e-81df-4f06-a932-a81e8a692814" />
+
+<img width="756" height="697" alt="image" src="https://github.com/user-attachments/assets/74086d9e-5e94-4e72-8ca5-af3a6beefdc4" />
 
 
-1. `seedAdmin.js` is run once, locally, to create the first admin account.
-   It reads `ADMIN_EMAIL` / `ADMIN_PASSWORD` from environment variables,
-   hashes the password with **bcrypt**, and stores only the hash.
-2. `POST /api/auth/login` looks up the admin by email, compares the
-   submitted password against the stored hash with `bcrypt.compare`, and — if
-   it matches — signs a **JWT** (`jsonwebtoken`) containing the admin's id and
-   email, valid for 8 hours.
-3. The React admin dashboard stores that token in `localStorage` and sends it
-   as `Authorization: Bearer <token>` on every request to a protected route.
-4. `middleware/auth.js` verifies the token on the server for every protected
-   route (`GET /api/leads`, `PATCH /api/leads/:id/status`). No token, an
-   expired token, or a tampered token is rejected with a 401, and the
-   dashboard redirects back to `/admin/login`.
+---
 
-The public lead-submission endpoint (`POST /api/leads`) has no auth, since
-anyone visiting the landing page should be able to submit — but it does run
-full server-side validation independent of the client-side checks in the
-React form, since the client checks can always be bypassed.
+## Admin Login
 
-## Assumptions made
+<img width="491" height="533" alt="image" src="https://github.com/user-attachments/assets/b40e396e-b0ef-40e5-ba1b-c26334f1502f" />
 
-- "Budget range" is a fixed set of bands rather than free text, so the admin
-  view can filter/sort meaningfully instead of parsing arbitrary strings.
-- One admin account is enough for this task's scope; `Admin` is a real
-  collection so adding more accounts later is just another seed/insert, not
-  a redesign.
-- Search is a case-insensitive substring match across name, email, and
-  message — simple and fast to reason about for a lead volume this small.
+---
 
-## Where AI was used
+## Admin Dashboard
 
-_Fill this in honestly before you submit — the brief asks for one short
-paragraph on where you used AI tools and what you changed. Be specific:
-what you asked for, what you kept, what you rewrote or rejected._
+<img width="986" height="522" alt="image" src="https://github.com/user-attachments/assets/491ee73a-09e8-475c-9a32-950b992b0a1d" />
 
-## Local development
+---
 
-**Backend**
+# Data Model
+
+Two MongoDB collections are used.
+
+## Lead Collection
+
+| Field | Type | Description |
+|---------|------|-------------|
+| name | String | Required (2–100 chars) |
+| email | String | Required, validated, lowercased |
+| budgetRange | String | Required enum |
+| message | String | Required (10–2000 chars) |
+| status | String | New / Contacted / Closed |
+| createdAt | Date | Auto timestamp |
+| updatedAt | Date | Auto timestamp |
+
+A text index on **name**, **email**, and **message** supports fast searching from the admin dashboard.
+
+---
+
+## Admin Collection
+
+| Field | Type | Description |
+|---------|------|-------------|
+| email | String | Unique |
+| passwordHash | String | bcrypt hash |
+
+I kept `Lead` and `Admin` as separate collections because they represent different responsibilities. Leads are public records submitted by visitors, whereas Admins are authenticated users with credentials. Keeping them separate makes the data model cleaner and easier to maintain.
+
+---
+
+# Authentication Flow
+
+The application uses **database-backed authentication**, not a hardcoded username/password.
+
+### Step 1
+
+A one-time script (`seedAdmin.js`) creates the first admin account using:
+
+- ADMIN_EMAIL
+- ADMIN_PASSWORD
+
+The password is hashed using **bcrypt** before storage.
+
+---
+
+### Step 2
+
+When an admin logs in:
+
+- Email is searched in MongoDB.
+- Password is verified using `bcrypt.compare()`.
+- If valid, the server generates a JWT valid for **8 hours**.
+
+---
+
+### Step 3
+
+The React dashboard stores the JWT in `localStorage`.
+
+Every protected request sends:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+### Step 4
+
+The backend middleware verifies the token before allowing access to:
+
+- GET /api/leads
+- PATCH /api/leads/:id/status
+
+Invalid, expired, or missing tokens return **401 Unauthorized**, and the frontend redirects users back to the login page.
+
+---
+
+# Validation
+
+## Client-side Validation
+
+- Required fields
+- Valid email format
+- Message length validation
+- Budget selection required
+
+## Server-side Validation
+
+The backend performs independent validation because client-side validation can be bypassed.
+
+Checks include:
+
+- Required fields
+- Email format
+- Budget enum validation
+- Name length
+- Message length
+
+---
+
+# Security
+
+This project includes several basic security practices:
+
+- Passwords hashed using bcrypt
+- JWT authentication
+- Protected admin routes
+- Environment variables for secrets
+- Server-side validation
+- Plain-text passwords are never stored
+
+---
+
+# Assumptions Made
+
+- Budget is stored as predefined ranges rather than free text so filtering and reporting remain consistent.
+- Only one admin account is needed for the assignment, although the design supports adding more later.
+- Search performs a case-insensitive text search across the name, email, and message fields.
+- Authentication uses JWT stored in localStorage, which is sufficient for this internship assignment.
+
+---
+
+# Deployment
+
+Frontend:
+- Vercel
+
+Backend:
+- Render
+
+Database:
+- MongoDB Atlas
+
+The application was tested after deployment using a fresh browser session to verify authentication and protected routes.
+
+---
+
+# Local Development
+
+## Backend
+
 ```bash
 cd backend
-cp .env.example .env      # fill in MONGODB_URI, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+cp .env.example .env
+
+# Configure:
+# MONGODB_URI
+# JWT_SECRET
+# ADMIN_EMAIL
+# ADMIN_PASSWORD
+
 npm install
-npm run seed:admin        # creates the first admin login, run once
-npm run dev                # starts the API on http://localhost:5000
+npm run seed:admin
+npm run dev
 ```
 
-**Frontend**
+Backend runs on:
+
+```
+http://localhost:5000
+```
+
+---
+
+## Frontend
+
 ```bash
 cd frontend
-cp .env.example .env       # set VITE_API_URL=http://localhost:5000/api
+
+cp .env.example .env
+
+# Configure:
+# VITE_API_URL=http://localhost:5000/api
+
 npm install
-npm run dev                 # starts the app on http://localhost:5173
+npm run dev
 ```
 
-See `DEPLOYMENT.md` for free-tier deployment steps (MongoDB Atlas + Render +
-Vercel).
+Frontend runs on:
+
+```
+http://localhost:5173
+```
+
+---
+
+# AI Usage
+
+I used ChatGPT and Claude as development assistants throughout this project. They helped with code generation, debugging, improving the README, reviewing authentication and project architecture, and suggesting implementation approaches. Every AI-generated suggestion was reviewed, modified where necessary, and tested before being incorporated. I was responsible for integrating the components, resolving issues, making implementation decisions, and ensuring the final application worked as intended.
+
+---
+
+# Assignment Requirements Checklist
+
+- Public Landing Page
+- Lead Form
+- Client-side Validation
+- Server-side Validation
+- MongoDB Database
+- Secure Admin Login
+- JWT Authentication
+- Protected Routes
+- Admin Dashboard
+- Search Functionality
+- Status Management
+- Deployment
+- README Documentation
+- Loom Walkthrough
+
+---
+
+# Notes
+
+- Passwords are never stored in plaintext.
+- Environment variables are excluded from version control.
+- `.env` files are not included in this repository.
+- This repository is intended solely for the Digital Heroes Full Stack Development Internship assessment.
+
+---
+
+## Footer Requirement
+
+The deployed website includes the required footer:
+
+> **Built for Digital Heroes Training Task**
+
+linked to **https://digitalheroesco.com** as requested in the assignment brief.
