@@ -1,3 +1,4 @@
+
 # Deploying LeadDesk Mini on free tiers
 
 This gets you: MongoDB Atlas (database) + Render (backend API) + Vercel
